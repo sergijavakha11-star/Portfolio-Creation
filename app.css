@@ -1,0 +1,154 @@
+/* Prototype layout only — components come from bog-ui. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--layer-layer-02); }
+.stage { position: fixed; inset: 0; display: grid; place-items: center; }
+
+/* Phone frame on desktop, full screen on a real phone */
+.phone {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  border-radius: 44px;
+  background: var(--layer-layer-01);
+  box-shadow: 0 0 0 10px var(--layer-layer-03, #1b1c1d), 0 30px 80px rgba(0, 0, 0, .25);
+  overflow: hidden;
+}
+@media (max-width: 500px), (max-height: 760px) and (max-width: 900px) {
+  .stage { place-items: stretch; }
+  .phone { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+  .bog-statusbar { display: none; }
+}
+
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.screen__body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-gap-large, 24px);
+  padding: var(--spacing-padding-default) var(--spacing-padding-default) 160px;
+  scrollbar-width: none;
+}
+.screen__body::-webkit-scrollbar { display: none; }
+html.bog-sheet-locked .screen__body { overflow: hidden; }
+.screen .bog-stickybar { position: absolute; left: 0; right: 0; bottom: 0; }
+
+/* Search stays pinned under the navigation bar while the list scrolls */
+.search-bar {
+  position: sticky;
+  top: calc(-1 * var(--spacing-padding-default));
+  z-index: 3;
+  margin: calc(-1 * var(--spacing-padding-default)) calc(-1 * var(--spacing-padding-default)) 0;
+  padding: var(--spacing-padding-default) var(--spacing-padding-default) var(--spacing-padding-small, 8px);
+  background: var(--layer-layer-01);
+  transition: box-shadow .2s ease;
+}
+.search-bar[data-stuck] { box-shadow: 0 1px 0 var(--border-alpha-01, rgba(0, 0, 0, .06)); }
+/* in the sheet: pinned to the top of the sheet's scroll area */
+.search-bar--sheet { top: 0; margin: 0 calc(-1 * var(--spacing-padding-default)); padding-top: 0; background: var(--layer-layer-05); }
+#owned-sheet .bog-sheet__content { display: flex; flex-direction: column; gap: var(--spacing-gap-medium, 12px); }
+
+/* Filters row under the search: sort & filter chip + one-tap chips (scroll sideways) */
+.filters-row { display: flex; align-items: center; gap: var(--spacing-gap-small, 8px); margin-top: var(--spacing-gap-medium, 12px); }
+.filters-row > .bog-chip { flex: none; }
+.filters-row > .bog-chip-group { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+.filters-row > .bog-chip-group::-webkit-scrollbar { display: none; }
+.searching .filters-row { display: none; }
+#others .bog-section__header:has(.bog-section__title:empty) { display: none; }
+
+/* Category groups */
+.list-groups { display: flex; flex-direction: column; gap: var(--spacing-gap-medium, 16px); }
+@keyframes groupIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.list-groups > .bog-list-group { animation: groupIn .24s cubic-bezier(.2, 0, 0, 1) both; }
+.list-groups > .bog-list-group:nth-child(2) { animation-delay: .04s; }
+.list-groups > .bog-list-group:nth-child(3) { animation-delay: .08s; }
+.list-groups > .bog-list-group.leaving { transition: opacity .2s, transform .2s; opacity: 0; transform: translateY(-6px); }
+.bog-list-group__header .bog-btn { margin: -4px 0; }
+
+/* Filter sheet */
+.filter-body { display: flex; flex-direction: column; gap: var(--spacing-gap-large, 24px); max-height: 60vh; overflow-y: auto; }
+.filter-body .bog-radio-group { border: 0; margin: 0; padding: 0; min-width: 0; }
+#filter-sheet .bog-sheet__bar { display: flex; flex-direction: column; gap: var(--spacing-gap-small, 8px); }
+
+/* While typing with the keyboard up, the page's own CTA steps aside (as in the Figma states) */
+.phone[data-kb][data-search-focus] .screen .bog-stickybar { opacity: 0; pointer-events: none; transition: opacity .15s; }
+
+/* Sticky Bar rides above the keyboard */
+.screen .bog-stickybar { transition: bottom .25s cubic-bezier(.2, 0, 0, 1); bottom: var(--bog-keyboard, 0px); }
+.phone[data-kb] .screen .bog-stickybar__home { display: none; }
+
+/* ---- Phone keyboard mock: iOS system UI (not a BOG component), desktop preview only ---- */
+.kb {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1100;
+  box-sizing: border-box; height: 291px; padding: 6px 3px 0;
+  background: #d1d4d9;  /* iOS keyboard background (system colour, no BOG token) */
+  transform: translateY(100%); transition: transform .25s cubic-bezier(.2, 0, 0, 1);
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; user-select: none; -webkit-user-select: none;
+}
+.phone[data-kb] .kb { transform: none; }
+.kb__row { display: flex; justify-content: center; gap: 6px; margin-bottom: 11px; }
+.kb__key {
+  all: unset; box-sizing: border-box; flex: 0 0 31.5px; height: 42px; border-radius: 5px;
+  display: grid; place-items: center; background: #fff; color: #000; font-size: 22px; line-height: 1;
+  box-shadow: 0 1px 0 #898a8d; cursor: pointer;
+}
+.kb__key:active { background: #b4b8bf; }
+.kb__key[data-wide] { flex-basis: 42px; background: #abb0ba; font-size: 16px; }
+.kb__key[data-space] { flex: 1 1 auto; font-size: 16px; }
+.kb__key[data-go] { flex-basis: 88px; background: #007aff; color: #fff; font-size: 16px; }
+.kb__key[data-shift-on] { background: #fff; }
+.kb__bottom { height: 46px; }
+
+/* Owned-stocks row: checkbox on its own, the rest of the row opens the sheet */
+.owned-row { gap: var(--spacing-gap-medium, 12px); padding-inline: 0; }
+.owned-row > .bog-checkbox__input { flex: none; }
+.owned-row__open {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-gap-medium, 12px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bog-list-item.owned-row > .owned-row__open { flex: 1 1 auto; }
+.owned-row__open:active { opacity: .6; }
+.owned-row__open .bog-list-item__content { flex: 1; min-width: 0; }
+.owned-row .bog-list-item__subtitle { transition: opacity .2s; }
+
+/* Stock rows: checkbox + logo + text + price */
+.stock-row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.stock-row > .bog-checkbox__input { flex: none; pointer-events: none; }
+.chg { display: inline-flex; align-items: center; gap: 2px; }
+.chg .bog-icon { width: 12px; height: 12px; }
+.chg[data-dir="up"] { color: var(--text-success); }
+.chg[data-dir="down"] { color: var(--text-error); }
+
+/* Search narrows the list; matches fade in */
+@keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.stock-row[data-hidden] { display: none; }
+.stock-row[data-shown] { animation: rowIn .22s ease both; }
+.empty-hint { margin: var(--spacing-padding-default) 0; text-align: center; color: var(--text-secondary);
+  font-size: var(--body-medium-size); line-height: var(--body-medium-line-height); }
+
+/* While searching, "your stocks" steps aside */
+.owned-row-wrap { transition: opacity .2s ease, margin .25s ease, max-height .25s ease; max-height: 120px; }
+.searching .owned-row-wrap { opacity: 0; max-height: 0; margin-bottom: calc(-1 * var(--spacing-gap-large, 24px)); pointer-events: none; overflow: hidden; }
+
+/* CTA count bump */
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.03); } 100% { transform: scale(1); } }
+#cta.bump { animation: bump .28s cubic-bezier(.3, .7, .4, 1); }
+
+/* Sheet list can scroll inside the sheet */
+#owned-sheet .bog-sheet__content { max-height: 56vh; overflow-y: auto; }
+.phone[data-kb] #owned-sheet .bog-sheet__content { max-height: 34vh; }
+
+/* Filter badge pops in when filters are first applied */
+@keyframes countPop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.bog-chip__count[data-pop] { animation: countPop .32s cubic-bezier(.3, .7, .4, 1.4) both; }
+/* group swap: leaving groups step out fast so the new ones aren't waiting */
+.list-groups > .bog-list-group.leaving { animation: none; transition-duration: .14s; }
+@media (prefers-reduced-motion: reduce) {
+  .bog-chip__count[data-pop], .list-groups > .bog-list-group { animation: none; }
+}
